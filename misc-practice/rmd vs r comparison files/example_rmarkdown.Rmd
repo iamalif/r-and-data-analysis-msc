@@ -1,0 +1,175 @@
+---
+title: "Example R Markdown: Student Grade Analysis"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+This notebook demonstrates basic data analysis in an **R Markdown** file.
+Compare this with `example_r_script.R` to see the difference!
+
+**How to run:**
+
+- Single chunk: Click ▶ or `Cmd+Shift+Enter` (Mac) / `Ctrl+Shift+Enter` (Windows)
+- Single line: `Cmd+Enter` (Mac) / `Ctrl+Enter` (Windows)
+- Knit to HTML: Click "Knit" or `Cmd+Shift+K` (Mac) / `Ctrl+Shift+K` (Windows)
+
+---
+
+# 1. Setup
+
+First, we create our sample data. In R Markdown, code lives inside "chunks":
+
+```{r create-data}
+# Create sample data (normally you'd load from a file)
+students <- data.frame(
+  name = c("Alice", "Bob", "Carol", "David", "Eve"),
+  math = c(92, 78, 85, 91, 88),
+  english = c(88, 82, 90, 76, 94),
+  science = c(95, 75, 82, 88, 91)
+)
+
+# Display the data (in R Markdown, this renders as a nice table)
+students
+```
+
+Notice how the output appears right below the code chunk!
+
+---
+
+# 2. Calculate Averages
+
+Let's add an average column for each student:
+
+```{r calculate-averages}
+# Calculate each student's average across subjects
+students$average <- rowMeans(students[, c("math", "english", "science")])
+
+# Round to 1 decimal place
+students$average <- round(students$average, 1)
+
+students
+```
+
+The class average is **`r round(mean(students$average), 1)`** — notice how we can embed R code directly in the text using backticks!
+
+---
+
+# 3. Assign Letter Grades
+
+Now we'll write a function to assign letter grades:
+
+```{r grade-function}
+# Function to convert score to letter grade
+assign_grade <- function(score) {
+  if (score >= 90) return("A")
+  if (score >= 80) return("B")
+  if (score >= 70) return("C")
+  if (score >= 60) return("D")
+  return("F")
+}
+```
+
+Apply it to each student:
+
+```{r apply-grades}
+students$grade <- sapply(students$average, assign_grade)
+students
+```
+
+---
+
+# 4. Summary Statistics
+
+Let's look at some summary statistics:
+
+```{r summary-stats}
+# Class average
+class_avg <- mean(students$average)
+
+# Top and bottom students
+top_student <- students$name[which.max(students$average)]
+bottom_student <- students$name[which.min(students$average)]
+```
+
+**Results:**
+
+| Metric | Value |
+|--------|-------|
+| Class Average | `r round(class_avg, 1)` |
+| Top Student | `r top_student` |
+| Needs Improvement | `r bottom_student` |
+
+**Grade Distribution:**
+
+```{r grade-distribution}
+table(students$grade)
+```
+
+---
+
+# 5. Visualization
+
+R Markdown displays plots directly in the document:
+
+```{r plot, fig.width=8, fig.height=5}
+# Bar plot of averages
+barplot(
+  students$average,
+  names.arg = students$name,
+  main = "Student Averages",
+  ylab = "Average Score",
+  col = "steelblue",
+  ylim = c(0, 100)
+)
+
+# Add a line for class average
+abline(h = class_avg, col = "red", lty = 2, lwd = 2)
+legend("topright", "Class Average", col = "red", lty = 2, lwd = 2)
+```
+
+---
+
+# Conclusion
+
+We analyzed `r nrow(students)` students and found:
+
+- **`r sum(students$grade == "A")`** students earned an A
+- **`r sum(students$grade == "B")`** students earned a B
+- The class average was **`r round(class_avg, 1)`**
+
+---
+
+# Notes on .Rmd Files
+
+## Pros
+
+- **Rich formatting** — Headers, bold, tables, lists
+- **Code + output together** — Results appear right after code
+- **Publishable documents** — Knit to HTML, PDF, or Word
+- **Inline R code** — Embed calculations in text
+- **Reproducible** — Knitting runs everything fresh
+
+## Cons
+
+- More complex syntax than plain .R
+- Knitting can be slow for large analyses
+- Need to understand Markdown formatting
+- Debugging can be trickier (chunk ordering matters)
+
+## When to use .Rmd
+
+- Reports and assignments
+- Sharing analysis with others
+- Documentation with code examples
+- When you want formatted output
+- Reproducible research

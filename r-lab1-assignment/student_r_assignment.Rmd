@@ -1,0 +1,567 @@
+---
+title: "R Programming Assignment: Comprehensive Data Analysis"
+author: "Your Name Here"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+# Load required packages
+if (!require("testthat")) install.packages("testthat")
+library(testthat)
+
+# Load the dataset
+data <- read.csv("student_scores.csv", stringsAsFactors = FALSE)
+```
+
+# Introduction
+
+Welcome to the R Programming Assignment! This notebook contains **10 functions** you need to implement.
+
+**How this works:**
+
+1. Each function has a **stub** (empty function body) that you need to complete
+2. After each function, there are **PUBLIC TESTS** that give you immediate feedback
+3. Run the tests frequently to check your progress
+4. Your instructor has additional **HIDDEN TESTS** that check edge cases and logic
+
+**Grading:**
+
+- Public tests help you verify basic functionality
+- Hidden tests (run by instructor) check complete correctness
+- You must pass ALL hidden tests to get full credit
+
+**Important:** Functions must handle edge cases properly. Read requirements carefully!
+
+---
+
+# Part 1: Data Loading & Validation
+
+## Function 1: Load and Validate Student Data
+
+**Task:** Load a CSV file and validate it has the expected structure.
+
+**Requirements:**
+
+- Return NULL if file doesn't exist (don't throw error)
+- Return NULL if file is empty
+- Return NULL if required columns are missing: "student_id", "name", "math_score"
+- Return the data frame only if all validations pass
+- Convert enrollment_date to Date type if present
+
+```{r load_student_data}
+# YOUR CODE HERE
+load_student_data <- function(filename) {
+  # TODO: Implement with proper validation
+  NULL
+}
+```
+
+### Public Tests - Function 1
+
+```{r test_load_student_data, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("load_student_data works", {
+    result <- load_student_data("student_scores.csv")
+    expect_false(is.null(result), info = "Function returned NULL - did you implement it?")
+    expect_true(is.data.frame(result))
+    expect_true("student_id" %in% colnames(result))
+    expect_true("name" %in% colnames(result))
+    expect_true("math_score" %in% colnames(result))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for load_student_data!\n")
+} else {
+  cat("✗ Public tests FAILED for load_student_data. Check the error messages above.\n")
+}
+```
+
+---
+
+## Function 2: Filter Students with Incomplete Data
+
+**Task:** Return students who have missing values (NA) in ANY of the score columns.
+
+**Requirements:**
+
+- Check math_score, english_score, science_score columns
+- Return data frame with ALL original columns
+- Include a new column "missing_count" showing how many scores are missing (1, 2, or 3)
+- Sort by missing_count (descending), then by student_id (ascending)
+- If no students have missing data, return empty data frame with correct column structure
+
+```{r filter_incomplete_students}
+# YOUR CODE HERE
+filter_incomplete_students <- function(data) {
+  # TODO: Find students with ANY missing scores
+  NULL
+}
+```
+
+### Public Tests - Function 2
+
+```{r test_filter_incomplete_students, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("filter_incomplete_students works", {
+    result <- filter_incomplete_students(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("missing_count" %in% colnames(result))
+    # Test data has students with missing scores, so result should not be empty
+    expect_true(nrow(result) > 0, info = "Should find students with missing scores")
+    expect_true(all(result$missing_count >= 1 & result$missing_count <= 3))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for filter_incomplete_students!\n")
+} else {
+  cat("✗ Public tests FAILED for filter_incomplete_students.\n")
+}
+```
+
+---
+
+# Part 2: Statistical Analysis with Edge Cases
+
+## Function 3: Calculate Weighted Average Score
+
+**Task:** Calculate a weighted average of the three exam scores.
+
+**Requirements:**
+
+- Weights: math (40%), english (30%), science (30%)
+- If a student has NA in a score, redistribute that weight proportionally to other scores
+  - Example: If science is NA, use math (57.14%) and english (42.86%)
+  - If two scores are NA, use the one available score (100%)
+- If all three scores are NA, return NA
+- Return a numeric vector with one value per student
+- Round to 2 decimal places
+
+```{r calculate_weighted_average}
+# YOUR CODE HERE
+calculate_weighted_average <- function(data) {
+  # TODO: Calculate weighted average with weight redistribution
+  NULL
+}
+```
+
+### Public Tests - Function 3
+
+```{r test_calculate_weighted_average, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("calculate_weighted_average works", {
+    result <- calculate_weighted_average(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_type(result, "double")
+    expect_equal(length(result), nrow(data))
+    expect_true(sum(!is.na(result)) > 0)
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for calculate_weighted_average!\n")
+} else {
+  cat("✗ Public tests FAILED for calculate_weighted_average.\n")
+}
+```
+
+---
+
+## Function 4: Identify Score Anomalies
+
+**Task:** Find students whose performance varies significantly across subjects.
+
+**Requirements:**
+
+- Calculate the range (max - min) of each student's three exam scores
+- Return students where range > threshold AND they have scores in at least 2 subjects
+- Add column "score_range" with the calculated range
+- Add column "highest_subject" (one of: "math_score", "english_score", "science_score")
+- Add column "lowest_subject" (one of: "math_score", "english_score", "science_score")
+- If student has all NA scores, exclude them
+- Sort by score_range (descending)
+
+```{r identify_score_anomalies}
+# YOUR CODE HERE
+identify_score_anomalies <- function(data, threshold) {
+  # TODO: Find students with high score variance
+  NULL
+}
+```
+
+### Public Tests - Function 4
+
+```{r test_identify_score_anomalies, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("identify_score_anomalies works", {
+    result <- identify_score_anomalies(data, 15)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("score_range" %in% colnames(result))
+    expect_true("highest_subject" %in% colnames(result))
+    expect_true("lowest_subject" %in% colnames(result))
+    if (nrow(result) > 0) {
+      expect_true(all(result$score_range > 15))
+    }
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for identify_score_anomalies!\n")
+} else {
+  cat("✗ Public tests FAILED for identify_score_anomalies.\n")
+}
+```
+
+---
+
+# Part 3: String Manipulation & Data Cleaning
+
+## Function 5: Standardize Student Names
+
+**Task:** Clean and standardize the name format.
+
+**Requirements:**
+
+- Convert to "LastName, FirstName" format
+- Handle names with titles (Dr., Mr., Ms., etc.) - remove them
+- Handle middle names - include them in FirstName part
+- Trim extra whitespace
+- Capitalize properly (Title Case)
+- If name has only one word, return "Unknown, [Name]"
+- Return the original data frame with "name" column updated
+
+**Examples:**
+
+- "Alice Johnson" → "Johnson, Alice"
+- "Dr. Bob Smith" → "Smith, Bob"
+- "Mary Jane Watson" → "Watson, Mary Jane"
+- "Prince" → "Unknown, Prince"
+
+```{r standardize_names}
+# YOUR CODE HERE
+standardize_names <- function(data) {
+  # TODO: Reformat names to LastName, FirstName
+  NULL
+}
+```
+
+### Public Tests - Function 5
+
+```{r test_standardize_names, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("standardize_names works", {
+    result <- standardize_names(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("name" %in% colnames(result))
+    expect_true(any(grepl(",", result$name)))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for standardize_names!\n")
+} else {
+  cat("✗ Public tests FAILED for standardize_names.\n")
+}
+```
+
+---
+
+## Function 6: Extract and Categorize Email Domains
+
+**Task:** Create email addresses and categorize by domain type.
+
+**Requirements:**
+
+- Generate email: firstname.lastname@domain.edu (all lowercase, no spaces)
+- Remove any special characters from names for email
+- Determine domain based on major:
+  - "Computer Science", "Engineering" → "tech.university.edu"
+  - "Mathematics", "Physics" → "science.university.edu"
+  - "Biology", "Chemistry" → "bio.university.edu"
+  - Others → "general.university.edu"
+- Add column "email" with generated email
+- Add column "domain_category" (one of: "tech", "science", "bio", "general")
+- Return the data frame with new columns
+
+```{r create_email_addresses}
+# YOUR CODE HERE
+create_email_addresses <- function(data) {
+  # TODO: Generate emails based on name and major
+  NULL
+}
+```
+
+### Public Tests - Function 6
+
+```{r test_create_email_addresses, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("create_email_addresses works", {
+    result <- create_email_addresses(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("email" %in% colnames(result))
+    expect_true("domain_category" %in% colnames(result))
+    expect_true(all(grepl("@.*\\.edu$", result$email)))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for create_email_addresses!\n")
+} else {
+  cat("✗ Public tests FAILED for create_email_addresses.\n")
+}
+```
+
+---
+
+# Part 4: Complex Conditional Logic
+
+## Function 7: Assign Letter Grades with Curve
+
+**Task:** Assign letter grades using a curved grading system.
+
+**Requirements:**
+
+- Calculate each student's average score (mean of available exam scores)
+- Apply curve: New_avg = min(100, avg + curve_points)
+- Assign grades based on curved average:
+  - A: >= 90
+  - B: 80-89
+  - C: 70-79
+  - D: 60-69
+  - F: < 60
+- If student has all NA scores, assign "I" (Incomplete)
+- Return character vector of grades
+- Grades must be in same order as input data
+
+```{r assign_curved_grades}
+# YOUR CODE HERE
+assign_curved_grades <- function(data, curve_points) {
+  # TODO: Calculate curved grades
+  NULL
+}
+```
+
+### Public Tests - Function 7
+
+```{r test_assign_curved_grades, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("assign_curved_grades works", {
+    result <- assign_curved_grades(data, 5)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_type(result, "character")
+    expect_equal(length(result), nrow(data))
+    valid_grades <- c("A", "B", "C", "D", "F", "I")
+    expect_true(all(result %in% valid_grades))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for assign_curved_grades!\n")
+} else {
+  cat("✗ Public tests FAILED for assign_curved_grades.\n")
+}
+```
+
+---
+
+## Function 8: Predict At-Risk with Multiple Criteria
+
+**Task:** Identify at-risk students using multiple weighted criteria.
+
+**Requirements:**
+
+- Calculate risk score (0-100) based on:
+  - Low attendance (< 80%): +30 points
+  - Low average exam score (< 70): +25 points
+  - Failed midterm (passed_midterm == FALSE): +20 points
+  - Missing assignments (any NA in assignment scores): +15 points
+  - High score variance (range > 20): +10 points
+- Students with risk_score >= risk_threshold are "at risk"
+- Return data frame with at-risk students only
+- Add columns: "risk_score" and "risk_factors" (comma-separated list of triggered factors)
+- Sort by risk_score (descending)
+
+**Example risk_factors:** "Low Attendance, Failed Midterm, Missing Assignments"
+
+```{r predict_at_risk_students}
+# YOUR CODE HERE
+predict_at_risk_students <- function(data, risk_threshold) {
+  # TODO: Calculate risk scores with multiple criteria
+  NULL
+}
+```
+
+### Public Tests - Function 8
+
+```{r test_predict_at_risk_students, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("predict_at_risk_students works", {
+    result <- predict_at_risk_students(data, 40)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("risk_score" %in% colnames(result))
+    expect_true("risk_factors" %in% colnames(result))
+    if (nrow(result) > 0) {
+      expect_true(all(result$risk_score >= 40))
+    }
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for predict_at_risk_students!\n")
+} else {
+  cat("✗ Public tests FAILED for predict_at_risk_students.\n")
+}
+```
+
+---
+
+# Part 5: Advanced Data Aggregation
+
+## Function 9: Create Detailed Major Statistics
+
+**Task:** Generate comprehensive statistics by major with conditional calculations.
+
+**Requirements:**
+
+- Group by major
+- Calculate for each major:
+  - `student_count`: Total students
+  - `avg_attendance`: Mean attendance
+  - `pass_rate`: Percentage with average score >= 60
+  - `honor_roll_count`: Number with average score >= 85
+  - `perfect_attendance`: Number with attendance >= 95%
+  - `completion_rate`: Percentage who completed all assignments (no NAs)
+  - `avg_assignments`: Mean of all assignment scores
+- Round all percentages to 1 decimal place
+- Round all averages to 2 decimal places
+- Sort by pass_rate (descending), then by major (alphabetical)
+
+```{r create_major_statistics}
+# YOUR CODE HERE
+create_major_statistics <- function(data) {
+  # TODO: Calculate comprehensive statistics by major
+  NULL
+}
+```
+
+### Public Tests - Function 9
+
+```{r test_create_major_statistics, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("create_major_statistics works", {
+    result <- create_major_statistics(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    required_cols <- c("major", "student_count", "avg_attendance", "pass_rate",
+                       "honor_roll_count", "perfect_attendance", "completion_rate")
+    expect_true(all(required_cols %in% colnames(result)))
+    expect_true(nrow(result) > 0)
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for create_major_statistics!\n")
+} else {
+  cat("✗ Public tests FAILED for create_major_statistics.\n")
+}
+```
+
+---
+
+## Function 10: Generate Performance Report with Ranking
+
+**Task:** Create a ranked performance report with percentile calculations.
+
+**Requirements:**
+
+- Calculate overall_score for each student: weighted average of exam scores (math: 40%, english: 30%, science: 30%)
+- Add columns:
+  - `overall_score`: The calculated weighted average
+  - `class_rank`: Rank based on overall_score (1 = highest, ties get same rank)
+  - `percentile`: Percentile rank (0-100, round to 1 decimal)
+  - `performance_tier`: Based on percentile:
+    - "Top 10%": percentile >= 90
+    - "Top 25%": percentile >= 75
+    - "Top 50%": percentile >= 50
+    - "Below Average": percentile < 50
+  - `improvement_needed`: TRUE if attendance < 85% OR any exam score < 65
+- Exclude students with all NA exam scores
+- Sort by class_rank (ascending)
+- Return data frame with: student_id, name, overall_score, class_rank, percentile, performance_tier, improvement_needed
+
+```{r generate_performance_report}
+# YOUR CODE HERE
+generate_performance_report <- function(data) {
+  # TODO: Create ranked performance report
+  NULL
+}
+```
+
+### Public Tests - Function 10
+
+```{r test_generate_performance_report, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("generate_performance_report works", {
+    result <- generate_performance_report(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    required_cols <- c("student_id", "name", "overall_score", "class_rank",
+                       "percentile", "performance_tier", "improvement_needed")
+    expect_true(all(required_cols %in% colnames(result)))
+    expect_true(nrow(result) > 0)
+    expect_true(all(result$percentile >= 0 & result$percentile <= 100))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for generate_performance_report!\n")
+} else {
+  cat("✗ Public tests FAILED for generate_performance_report.\n")
+}
+```
+
+---
+
+# Summary
+
+Run all chunks above to test your implementations. Make sure all public tests pass!
+
+**Before submitting:**
+
+1. Knit this document to HTML to ensure everything runs
+2. Check that you see "✓ Public tests passed" for all 10 functions
+3. Submit this .Rmd file along with your AI usage declaration
+
+**Note:** Your instructor will run additional hidden tests that check:
+
+- Edge cases (empty data, all NAs, boundary values)
+- Correct logic implementation
+- Proper handling of special cases
+- Weight redistribution accuracy
+- Ranking and percentile calculations
+- String manipulation correctness
+
+Good luck!

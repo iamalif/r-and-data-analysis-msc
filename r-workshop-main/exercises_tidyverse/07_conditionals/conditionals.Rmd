@@ -1,0 +1,241 @@
+---
+title: "07: Conditionals"
+author: "Al Amin Alif"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction to Conditionals
+
+In R, conditionals are used to control the flow of execution based on certain conditions. The most common conditional statement is the `if-else` statement.
+
+```{r}
+# An if-else statement
+x <- 10
+if (x > 5) {
+  print("x is greater than 5")
+} else {
+  print("x is not greater than 5")
+}
+```
+
+## Exercises
+
+1. Write an `if-else` statement that checks if a number is positive or negative.
+
+```{r}
+# Your code here
+num <- -5
+if(num>=0){
+  print("Positive")
+}else{
+ print("Negative") 
+}
+```
+
+2. Write an `if-else` statement that checks if a person is eligible to vote (age >= 18).
+
+```{r}
+# Your code here
+age <- 17
+if(age>=18){
+  print("Eligible")
+}else{
+  print("Not Eligible")
+}
+```
+
+3. Write a function named `check_grade` that takes a numeric grade as input and returns "Pass" if the grade is 50 or above, and "Fail" otherwise.
+
+```{r}
+# Your code here
+check_grade <- function(grade){
+  if(grade>=50){
+    print("Pass")
+  }else{
+    print("Fail")
+  }
+}
+check_grade(47)
+```
+
+4. Write a program that checks if a given number is even or odd.
+
+```{r}
+# Your code here
+odd_even_checker <- function(num){
+ if(num%%2 == 0){
+   print("Even")
+ }else{
+   print("Odd")
+ }
+}
+odd_even_checker(3)
+```
+
+5. Write a program that checks if a given number is positive, negative, or zero.
+
+```{r}
+# Your code here
+pos_neg_zero_checker <- function(num){
+  if(num == 0){
+    print("The number is zero")
+  }else if(num>0){
+    print("The number is positive")
+  }else{
+    print("The number is negative")
+  }
+}
+pos_neg_zero_checker(0)
+pos_neg_zero_checker(3)
+pos_neg_zero_checker(-4)
+```
+
+6. Write a program that checks if a given string is empty or not.
+
+```{r}
+# Your code here
+is_null <- function(str){
+  if(nchar(str)==0){
+    print("String is empty")
+  }else{
+    print("String is not empty")
+  }
+}
+is_null("")
+is_null("string")
+```
+
+7. Write a program that checks if a given vector contains a specified element.
+
+```{r}
+# Your code here
+input_vec <- c(1,2,3,4,5)
+element_checker <- function(elem){
+  if(elem %in% input_vec){
+    print("Vector contains the element")
+  }else{
+    print("Vector does not contain the element")
+  }
+}
+element_checker(6)
+element_checker(3)
+```
+
+8. Write a program that checks if a given number is between two other numbers.
+
+```{r}
+# Your code here
+is_between <- function(num, lower, upper){
+  if(num>lower && num<upper){
+    print("Is between")
+  }else{
+    print("Is NOT between")
+  }
+}
+is_between(3,4,5)
+is_between(3,1,5)
+```
+
+9. Write a program that checks if a given year is a leap year.
+
+```{r}
+# Your code here
+is_leap_year <- function(year){
+  if((year %% 4 == 0 && year %% 100 != 0) || (year %% 400 == 0)){
+    print("Leap year")
+  }else{
+    print("Not leap year")
+  }
+}
+is_leap_year(2025)
+is_leap_year(2024)
+```
+
+10. Write a program that checks if a given number is a prime number.
+
+```{r}
+# Your code here
+is_prime <- function(num) {
+  if (num <= 1) {
+    print("Not a prime number")
+    return()
+  }
+  for (i in 2:(num - 1)) {
+    if (num %% i == 0) {
+      print("Not a prime number")
+      return()
+    }
+  }
+  print("Prime number")
+}
+is_prime(7)
+is_prime(10)
+```
+
+11. Write a program that assigns grades (A, B, C, D, F) based on a given score (0-100).
+
+```{r}
+# Your code here
+assign_grade <- function(score) {
+  if (score >= 90) {
+    print("A")
+  } else if (score >= 80) {
+    print("B")
+  } else if (score >= 70) {
+    print("C")
+  } else if (score >= 60) {
+    print("D")
+  } else {
+    print("F")
+  }
+}
+assign_grade(95)
+assign_grade(72)
+assign_grade(42)
+```
+
+12. Write a program that checks if a given number is a perfect square.
+
+```{r}
+# Your code here
+is_perfect_square <- function(num){
+  if(num<0){
+    print("Not perfect square")
+    return()
+  }
+  sqrt_num <- sqrt(num)
+  if(sqrt_num == floor(sqrt_num)){
+    print("Perfect square")
+  }else{
+    print("Not perfect square")
+  }
+}
+is_perfect_square(16)
+is_perfect_square(12)
+```
+
+13. Write a program that checks if a given number is a palindrome.
+
+```{r}
+# Your code here
+is_palindrome <- function(num) {
+  num_str <- as.character(num)
+  reversed_str <- paste(rev(strsplit(num_str, "")[[1]]), collapse = "")
+  if (num_str == reversed_str) {
+    print("Palindrome")
+  } else {
+    print("Not a Palindrome")
+  }
+}
+is_palindrome(121)
+is_palindrome(123)
+```
+
+## Solutions
+
+[Click here for the solutions](conditionals_answers.Rmd)

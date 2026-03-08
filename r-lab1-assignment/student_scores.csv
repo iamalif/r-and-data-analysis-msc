@@ -1,0 +1,53 @@
+student_id,name,gender,major,math_score,english_score,science_score,attendance_rate,assignment1_score,assignment2_score,assignment3_score,enrollment_date,passed_midterm
+1,Alice Johnson,Female,Computer Science,85,92,88,95.5,90,88,92,2025-09-01,TRUE
+2,Bob Smith,Male,Mathematics,72,78,NA,88.0,75,70,NA,2025-09-01,TRUE
+3,Carol Williams,Female,Physics,95,88,91,97.2,98,95,93,2025-09-01,TRUE
+4,David Brown,Male,Biology,68,85,75,82.5,72,68,70,2025-09-02,FALSE
+5,Emma Davis,Female,Chemistry,NA,90,82,91.0,85,NA,88,2025-09-01,TRUE
+6,Frank Miller,Male,Engineering,78,72,79,76.5,80,78,75,2025-09-03,TRUE
+7,Grace Wilson,Female,Computer Science,90,95,93,98.0,92,94,96,2025-09-01,TRUE
+8,Henry Moore,Male,Business,65,70,68,70.0,68,65,62,2025-09-05,FALSE
+9,Iris Taylor,Female,Mathematics,88,NA,85,89.5,90,87,NA,2025-09-01,TRUE
+10,Jack Anderson,Male,Physics,92,89,90,94.0,95,91,89,2025-09-01,TRUE
+11,Kate Thomas,Female,Biology,70,75,72,79.0,73,71,74,2025-09-02,FALSE
+12,Liam Jackson,Male,Chemistry,82,80,NA,85.5,84,82,80,2025-09-01,TRUE
+13,Mia White,Female,Engineering,75,82,78,87.0,78,76,80,2025-09-02,TRUE
+14,Noah Harris,Male,Computer Science,95,98,96,99.0,100,98,97,2025-09-01,TRUE
+15,Olivia Martin,Female,Mathematics,80,85,83,92.0,82,84,86,2025-09-01,TRUE
+16,Paul Thompson,Male,Physics,73,68,70,75.5,70,72,69,2025-09-03,FALSE
+17,Quinn Garcia,Non-binary,Biology,87,90,88,93.0,89,88,90,2025-09-01,TRUE
+18,Ryan Martinez,Male,Chemistry,69,72,NA,71.0,70,68,NA,2025-09-04,FALSE
+19,Sophia Robinson,Female,Engineering,91,94,92,96.0,93,92,94,2025-09-01,TRUE
+20,Thomas Clark,Male,Business,77,79,76,83.0,78,77,79,2025-09-02,TRUE
+21,Uma Patel,Female,Computer Science,89,87,90,94.5,88,90,91,2025-09-01,TRUE
+22,Victor Lee,Male,Mathematics,78,82,80,86.0,80,79,81,2025-09-02,TRUE
+23,Wendy Chen,Female,Physics,93,91,94,97.5,95,93,92,2025-09-01,TRUE
+24,Xavier Rodriguez,Male,Biology,71,74,73,80.0,72,70,74,2025-09-03,FALSE
+25,Yara Ahmed,Female,Chemistry,86,88,87,90.0,87,86,88,2025-09-01,TRUE
+26,Zack Brown,Male,Engineering,74,76,75,78.0,75,73,76,2025-09-02,TRUE
+27,Amy Wilson,Female,Business,82,85,84,88.5,83,84,85,2025-09-01,TRUE
+28,Brian Cooper,Male,Computer Science,79,80,81,85.0,80,78,82,2025-09-02,TRUE
+29,Chloe Davis,Female,Mathematics,88,90,89,92.5,89,88,90,2025-09-01,TRUE
+30,Daniel Kim,Male,Physics,90,88,91,95.0,92,90,89,2025-09-01,TRUE
+31,Elena Martinez,Female,Biology,76,78,77,84.0,77,76,78,2025-09-02,TRUE
+32,Felix Zhang,Male,Chemistry,85,83,86,89.0,84,86,85,2025-09-01,TRUE
+33,Gina Thompson,Female,Engineering,72,75,73,81.0,74,72,75,2025-09-03,FALSE
+34,Hugo Alvarez,Male,Business,68,70,69,74.0,69,68,70,2025-09-04,FALSE
+35,Isla Johnson,Female,Computer Science,94,96,95,98.5,96,95,97,2025-09-01,TRUE
+36,James Park,Male,Mathematics,81,83,82,87.5,82,81,83,2025-09-01,TRUE
+37,Kira Singh,Female,Physics,87,89,88,91.5,88,87,89,2025-09-01,TRUE
+38,Leo Garcia,Male,Biology,73,76,74,79.5,74,73,75,2025-09-03,FALSE
+39,Maya Patel,Female,Chemistry,89,91,90,93.5,90,89,91,2025-09-01,TRUE
+40,Nathan Lee,Male,Engineering,77,79,78,82.5,78,77,79,2025-09-02,TRUE
+41,Olivia Brown,Female,Business,80,82,81,86.5,81,80,82,2025-09-01,TRUE
+42,Peter Wang,Male,Computer Science,91,93,92,96.5,93,92,94,2025-09-01,TRUE
+43,Rachel Cohen,Female,Mathematics,84,86,85,90.5,85,84,86,2025-09-01,TRUE
+44,Samuel Green,Male,Physics,75,77,76,83.5,76,75,77,2025-09-02,TRUE
+45,Tina Rodriguez,Female,Biology,70,72,71,77.0,71,70,72,2025-09-03,FALSE
+46,Umar Hassan,Male,Chemistry,83,85,84,88.0,84,83,85,2025-09-01,TRUE
+47,Violet Martinez,Female,Engineering,86,88,87,91.0,87,86,88,2025-09-01,TRUE
+48,William Taylor,Male,Business,74,76,75,80.5,75,74,76,2025-09-02,TRUE
+49,Xena Liu,Female,Computer Science,92,94,93,97.0,94,93,95,2025-09-01,TRUE
+50,Yasmin Ali,Female,Mathematics,79,81,80,85.5,80,79,81,2025-09-01,TRUE
+51,Prince,Male,Business,NA,NA,NA,65.0,50,45,48,2025-09-10,FALSE
+52,Madonna,Female,Chemistry,85,NA,NA,78.0,70,72,NA,2025-09-10,TRUE
