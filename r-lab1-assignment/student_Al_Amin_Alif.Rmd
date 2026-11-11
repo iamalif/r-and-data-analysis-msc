@@ -1,0 +1,1353 @@
+---
+title: "R Programming Assignment: Comprehensive Data Analysis"
+author: "Al Amin Alif"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+# Load required packages
+if (!require("testthat")) install.packages("testthat")
+library(testthat)
+
+# Load the dataset
+data <- read.csv("student_scores.csv", stringsAsFactors = FALSE)
+```
+
+# Introduction
+
+Welcome to the R Programming Assignment! This notebook contains **10 functions** you need to implement.
+
+**How this works:**
+
+1. Each function has a **stub** (empty function body) that you need to complete
+2. After each function, there are **PUBLIC TESTS** that give you immediate feedback
+3. Run the tests frequently to check your progress
+4. Your instructor has additional **HIDDEN TESTS** that check edge cases and logic
+
+**Grading:**
+
+- Public tests help you verify basic functionality
+- Hidden tests (run by instructor) check complete correctness
+- You must pass ALL hidden tests to get full credit
+
+**Important:** Functions must handle edge cases properly. Read requirements carefully!
+
+---
+
+# Part 1: Data Loading & Validation
+
+## Function 1: Load and Validate Student Data
+
+**Task:** Load a CSV file and validate it has the expected structure.
+
+**Requirements:**
+
+- Return NULL if file doesn't exist (don't throw error)
+- Return NULL if file is empty
+- Return NULL if required columns are missing: "student_id", "name", "math_score"
+- Return the data frame only if all validations pass
+- Convert enrollment_date to Date type if present
+
+```{r load_student_data}
+# YOUR CODE HERE
+load_student_data <- function(student_scores.csv) {
+  # TODO: Implement with proper validation
+  
+  # This is to make sure the input is valid. The function expects a single character value (the file path). If it's NULL and not a character, or has length other than 1, I am returning NULL as a safe failure.
+  if(is.null(student_scores.csv) || !is.character(student_scores.csv) || length(student_scores.csv)!=1){
+    return(NULL)
+  }
+  
+  # Checking whether the file/dataset actually exists. Not throwing any error.
+  if (!file.exists(student_scores.csv)) {
+    return(NULL)
+  }
+  
+  # This is to read the CSV file. I am wrapping it in tryCatch to prevent the whole script from crashing in the case of failure.
+  # Also, (stringsAsFactors = FALSE) is to force the text to stay as characters.
+  df <- tryCatch(
+    read.csv("student_scores.csv", stringsAsFactors = FALSE),
+    error = function(e){
+      return(NULL)
+    }
+  )
+  
+  # In case the read.csv() failed, I am returning NULL.
+  if(is.null(df)){
+    return(NULL)
+  }
+  
+  # In case the file/dataset is empty, I am returning NULL. Basically when there are no rows or columns, it implies the dataset is empty.
+  if(nrow(df)==0 || ncol(df)==0){
+    return(NULL)
+  }
+  
+  # Defining the columns that are mandatory/required for the data to be valid.
+  required_cols <- c("student_id", "name", "math_score")
+  
+  # Checking if all the required columns are present in the dataset, and returning NULL otherwise.
+  if(!all(required_cols %in% names(df))){
+    return(NULL)
+  }
+  
+  # If the enrollment_date column exists, I am converting it to type Date.
+  if("enrollment_date" %in% names(df)){
+    df$enrollment_date <- as.Date(df$enrollment_date)
+  }
+  
+  # If all the checks are passed successfully, I am returning the validated data frame.
+  return(df)
+}
+```
+
+### Public Tests - Function 1
+
+```{r test_load_student_data, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("load_student_data works", {
+    result <- load_student_data("student_scores.csv")
+    expect_false(is.null(result), info = "Function returned NULL - did you implement it?")
+    expect_true(is.data.frame(result))
+    expect_true("student_id" %in% colnames(result))
+    expect_true("name" %in% colnames(result))
+    expect_true("math_score" %in% colnames(result))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for load_student_data!\n")
+} else {
+  cat("✗ Public tests FAILED for load_student_data. Check the error messages above.\n")
+}
+```
+
+---
+
+## Function 2: Filter Students with Incomplete Data
+
+**Task:** Return students who have missing values (NA) in ANY of the score columns.
+
+**Requirements:**
+
+- Check math_score, english_score, science_score columns
+- Return data frame with ALL original columns
+- Include a new column "missing_count" showing how many scores are missing (1, 2, or 3)
+- Sort by missing_count (descending), then by student_id (ascending)
+- If no students have missing data, return empty data frame with correct column structure
+
+```{r filter_incomplete_students}
+# YOUR CODE HERE
+filter_incomplete_students <- function(data) {
+  # TODO: Find students with ANY missing scores
+  
+  # First check is to see if the input is valid. As the function is expecting a data frame, if it is NULL or not a data frame, I am returning an empty data frame.
+  if (is.null(data) || !is.data.frame(data)) {
+    return(data.frame(missing_count = integer(0)))
+  }
+  
+  # Specified score columns to be considered.
+  score_columns <- c("math_score", "english_score", "science_score")
+  
+  # Ensuring I am only working with score columns that actually exist in the data.
+  existing_scores <- score_columns[score_columns %in% names(data)]
+  
+  # In case none of the score columns exist, then it's not possible to determine incomplete students. I am returning an empty data frame in this case - holding the same column structure.
+  if(length(existing_scores)==0){
+    result <- data
+    result$missing_count <- integer(nrow(result))
+    return(result[0, , drop=FALSE])
+  }
+  
+  # Creating a logical matrix for checking each exam score for missing values (or NA). Here each row is representing a student and each column is representing one exam subject. TRUE means that particular exam score is missing for that student.
+  missing_matrix <- is.na(data[, existing_scores, drop=FALSE])
+  
+  # Counting how many exam scores are missing for each student. rowSums() adds up TRUE values across each row.
+  missing_count <- rowSums(missing_matrix)
+  
+  # Identifying students who are missing at least one score.
+  incomplete_rows <- missing_count>0
+  
+  # Subsetting the original data to keep only the students with missing scores.
+  result <- data[incomplete_rows, , drop=FALSE]
+  
+  # Adding the missing_count column to the result data frame.
+  result$missing_count <- missing_count[incomplete_rows]
+  
+  # Sorting the results in descending order of missing count and ascending order of student_id.
+  if("student_id" %in% names(result)){
+    sort_order <- order(-result$missing_count, result$student_id)
+  }else{
+    sort_order <- order(-result$missing_count)
+  }
+  
+  # Applying the final sorting and returning the final data frame.
+  return(result[sort_order, , drop = FALSE])
+}
+```
+
+### Public Tests - Function 2
+
+```{r test_filter_incomplete_students, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("filter_incomplete_students works", {
+    result <- filter_incomplete_students(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("missing_count" %in% colnames(result))
+    # Test data has students with missing scores, so result should not be empty
+    expect_true(nrow(result) > 0, info = "Should find students with missing scores")
+    expect_true(all(result$missing_count >= 1 & result$missing_count <= 3))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for filter_incomplete_students!\n")
+} else {
+  cat("✗ Public tests FAILED for filter_incomplete_students.\n")
+}
+```
+
+---
+
+# Part 2: Statistical Analysis with Edge Cases
+
+## Function 3: Calculate Weighted Average Score
+
+**Task:** Calculate a weighted average of the three exam scores.
+
+**Requirements:**
+
+- Weights: math (40%), english (30%), science (30%)
+- If a student has NA in a score, redistribute that weight proportionally to other scores
+  - Example: If science is NA, use math (57.14%) and english (42.86%)
+  - If two scores are NA, use the one available score (100%)
+- If all three scores are NA, return NA
+- Return a numeric vector with one value per student
+- Round to 2 decimal places
+
+```{r calculate_weighted_average}
+# YOUR CODE HERE
+calculate_weighted_average <- function(data) {
+  # TODO: Calculate weighted average with weight redistribution
+  
+  # Firstly, I am checking to see if the input is valid. As the function is expecting a data frame, if it's NULL or not a data frame, I am returning an empty numeric vector as a safe failure.
+  if(is.null(data) || !is.data.frame(data)){
+    return(numeric(0))
+  }
+  
+  # Defining (as vectors for now) the score columns and their base weights as mentioned/instructed.
+  score_cols <- c("math_score", "english_score", "science_score")
+  base_weights <- c(math_score = 0.40, english_score = 0.30, science_score = 0.30)
+  
+  # Ensuring all required score columns exist in the dataset. If anything is missing, I am creating that column and filling it with NA so that the logic remains consistent.
+  for(col in score_cols){
+    if(!col %in% names(data)){
+      data[[col]] <- NA
+    }
+  }
+  
+  # Extracting the score columns into a matrix for easier row-wise calculations.
+  scores <- as.matrix(data[, score_cols, drop=FALSE])
+  
+  # Creating an output vector where each element will store one student's weighted average.
+  result <- rep(NA_real_, nrow(scores))
+  
+  # Running a loop through each student/row to apply the weight redistribution logic.
+  for(i in seq_len(nrow(scores))){
+    # Pulling the three subject scores for the student in question.
+    row_scores <- scores[i, ]
+    
+    # Identifying which subjects have valid or non-NA scores.
+    available <- !is.na(row_scores)
+    
+    # In case all three scores are NA, the weighted average is set to NA.
+    if(sum(available) == 0){
+      result[i] <- NA_real_
+      next
+    }
+    
+    # Getting the base weights only for the available subjects.
+    w <- base_weights[available]
+    
+    # Redistributing weights proportionally. The new weights become w / sum(w), so that the available subjects sum up to 1.
+    w <- w/sum(w)
+    
+    # Calculating the weighted average using only available scores and redistributed weights.
+    result[i] <- sum(row_scores[available]*w)
+  }
+  
+  # Rounding to 2 decimal places as instructed and returning the numeric vector.
+  return(round(result, 2))
+}
+```
+
+### Public Tests - Function 3
+
+```{r test_calculate_weighted_average, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("calculate_weighted_average works", {
+    result <- calculate_weighted_average(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_type(result, "double")
+    expect_equal(length(result), nrow(data))
+    expect_true(sum(!is.na(result)) > 0)
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for calculate_weighted_average!\n")
+} else {
+  cat("✗ Public tests FAILED for calculate_weighted_average.\n")
+}
+```
+
+---
+
+## Function 4: Identify Score Anomalies
+
+**Task:** Find students whose performance varies significantly across subjects.
+
+**Requirements:**
+
+- Calculate the range (max - min) of each student's three exam scores
+- Return students where range > threshold AND they have scores in at least 2 subjects
+- Add column "score_range" with the calculated range
+- Add column "highest_subject" (one of: "math_score", "english_score", "science_score")
+- Add column "lowest_subject" (one of: "math_score", "english_score", "science_score")
+- If student has all NA scores, exclude them
+- Sort by score_range (descending)
+
+```{r identify_score_anomalies}
+# YOUR CODE HERE
+identify_score_anomalies <- function(data, threshold) {
+  # TODO: Find students with high score variance
+  
+  # Checking to see if the input dataset is valid. If it's NULL or not a data frame, I am returning an empty data frame as a safe failure.
+  if(is.null(data) || !is.data.frame(data)){
+    return(data.frame())
+  }
+  
+  # Validating the threshold to ensure it's a single numeric value. In case it's invalid, I am returning an empty data frame with expected added columns.
+  if(is.null(threshold) || !is.numeric(threshold) || length(threshold) != 1 || is.na(threshold)){
+    empty <- data[0, , drop = FALSE]
+    empty$score_range <- numeric(0)
+    empty$highest_subject <- character(0)
+    empty$lowest_subject <- character(0)
+    return(empty)
+  }
+  
+  # Defining the relevant score columns.
+  score_cols <- c("math_score", "english_score", "science_score")
+  
+  # Ensuring all three score columns exist, and if any is missing, I am creating it as NA.
+  for(col in score_cols){
+    if(!col %in% names(data)){
+      data[[col]] <- NA
+    }
+  }
+  
+  # Extracting the scores into a matrix for row-wise operations.
+  scores <- as.matrix(data[, score_cols, drop=FALSE])
+  
+  # Counting the number of non-NA subject scores that each individual student has.
+  non_na_count <- rowSums(!is.na(scores))
+  
+  # Creating vectors for range and the highest and lowest subject names.
+  score_range <- rep(NA_real_, nrow(scores))
+  highest_subject <- rep(NA_character_, nrow(scores))
+  lowest_subject <- rep(NA_character_, nrow(scores))
+  
+  # Looping through each student to calculate range and identify subjects.
+  for(i in seq_len(nrow(scores))){
+    row_scores <- scores[i, ]
+    available_idx <- which(!is.na(row_scores))
+    
+    # If the student has no available scores:
+    if(length(available_idx)==0){
+      next
+    }
+    
+    # Considering only the students with at least 2 available subject scores:
+    if(length(available_idx)<2){
+      next
+    }
+    
+    # Calculating the maximum and minimum among the available scores:
+    avail_scores <- row_scores[available_idx]
+    max_val <- max(avail_scores)
+    min_val <- min(avail_scores)
+    
+    # Range or (max - min):
+    score_range[i] <- max_val-min_val
+    
+    # Determining highest_subject and lowest_subject. In case there are ties, I am selecting the first subject in the order: math > english > science.
+    max_positions <- available_idx[avail_scores==max_val]
+    min_positions <- available_idx[avail_scores==min_val]
+    highest_subject[i] <- score_cols[min(max_positions)]
+    lowest_subject[i] <- score_cols[min(min_positions)]
+  }
+  
+  # Adding the calculated columns to a copy of the original dataset.
+  result <- data
+  result$score_range <- score_range
+  result$highest_subject <- highest_subject
+  result$lowest_subject <- lowest_subject
+  
+  # Applying the required filters: student to have scores in at least 2 subjects, the range to be greater than the threshold, and excluding the students with all NA scores.
+  keep <- (non_na_count>=2) & !is.na(result$score_range) & (result$score_range>threshold)
+  
+  # Subsetting the data to keep only anomalies.
+  result <- result[keep, , drop=FALSE]
+  
+  # Sorting by score_range in descending order as instructed.
+  if(nrow(result) > 0){
+    result <- result[order(-result$score_range), , drop=FALSE]
+  }
+  
+  # Returning the final anomalies data frame with added columns.
+  return(result)
+}
+```
+
+### Public Tests - Function 4
+
+```{r test_identify_score_anomalies, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("identify_score_anomalies works", {
+    result <- identify_score_anomalies(data, 15)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("score_range" %in% colnames(result))
+    expect_true("highest_subject" %in% colnames(result))
+    expect_true("lowest_subject" %in% colnames(result))
+    if (nrow(result) > 0) {
+      expect_true(all(result$score_range > 15))
+    }
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for identify_score_anomalies!\n")
+} else {
+  cat("✗ Public tests FAILED for identify_score_anomalies.\n")
+}
+```
+
+---
+
+# Part 3: String Manipulation & Data Cleaning
+
+## Function 5: Standardize Student Names
+
+**Task:** Clean and standardize the name format.
+
+**Requirements:**
+
+- Convert to "LastName, FirstName" format
+- Handle names with titles (Dr., Mr., Ms., etc.) - remove them
+- Handle middle names - include them in FirstName part
+- Trim extra whitespace
+- Capitalize properly (Title Case)
+- If name has only one word, return "Unknown, [Name]"
+- Return the original data frame with "name" column updated
+
+**Examples:**
+
+- "Alice Johnson" → "Johnson, Alice"
+- "Dr. Bob Smith" → "Smith, Bob"
+- "Mary Jane Watson" → "Watson, Mary Jane"
+- "Prince" → "Unknown, Prince"
+
+```{r standardize_names}
+# YOUR CODE HERE
+standardize_names <- function(data) {
+  # TODO: Reformat names to LastName, FirstName
+  
+  # Firstly, checking to see if the input is valid. The function expects a data frame. So if it's NULL or not a data frame, I am returning NULL as a safe failure (basically the same pattern as earlier functions).
+  if(is.null(data) || !is.data.frame(data)){
+    return(NULL)
+  }
+  
+  # No standardization can be done in case the name column doesn't exist. So this is to check for that. I am returning the data unchanged in that case.
+  if(!"name" %in% names(data)){
+    return(data)
+  }
+  
+  # Defining common titles - fetched from the web - that should be removed from the beginning of names.
+  titles_pattern <- "^(dr\\.|mr\\.|ms\\.|mrs\\.|miss\\.|prof\\.|sir\\.|madam\\.|mx\\.)\\s+"
+  
+  # Creating a function to convert a string to Title Case.
+  to_title_case <- function(x){
+    parts <- strsplit(x, "\\s+", perl=TRUE)[[1]]
+    parts <- parts[parts!=""]
+    if(length(parts)==0){
+      return("")
+    }
+    parts <- vapply(parts, function(p){
+      p <- tolower(p)
+      paste0(toupper(substr(p, 1, 1)), substr(p, 2, nchar(p)))
+    }, character(1))
+    paste(parts, collapse = " ")
+  }
+  
+  # Applying cleaning + formatting to each name.
+  data$name <- vapply(data$name, function(nm){
+    # If name is NA or empty, I am returning it as-is. So, NA stays NA and empty becomes empty.
+    if(is.na(nm)){
+      return(NA_character_)
+    }
+    
+    # Converting to character and trimming whitespace.
+    nm <- as.character(nm)
+    nm <- gsub("\\s+", " ", trimws(nm))
+    
+    # If after trimming it becomes empty, I am returning an empty string.
+    if(nm==""){
+      return("")
+    }
+    
+    # Removing title prefixes (case-insensitive).
+    nm <- gsub(titles_pattern, "", nm, ignore.case=TRUE, perl=TRUE)
+    
+    # Trimming again after title removal and normalizing spaces.
+    nm <- gsub("\\s+", " ", trimws(nm))
+    
+    # If name is now empty after removing titles, I am treating it as unknown.
+    if(nm == ""){
+      return("")
+    }
+    
+    # Splitting name into words.
+    parts <- strsplit(nm, "\\s+", perl=TRUE)[[1]]
+    parts <- parts[parts != ""]
+    
+    # If there's only one word, I am returning "Unknown, [Name]" as instructed.
+    if(length(parts)==1){
+      single <- to_title_case(parts[1])
+      return(paste0("Unknown, ", single))
+    }
+    
+    # LastName is the last token and FirstName is everything before it which includes middle names.
+    last_name <- to_title_case(parts[length(parts)])
+    first_part <- to_title_case(paste(parts[1:(length(parts) - 1)], collapse = " "))
+    
+    # Returning in "LastName, FirstName" format.
+    paste0(last_name, ", ", first_part)
+  }, character(1))
+  
+  # Finally returning the updated data frame.
+  return(data)
+}
+```
+
+### Public Tests - Function 5
+
+```{r test_standardize_names, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("standardize_names works", {
+    result <- standardize_names(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("name" %in% colnames(result))
+    expect_true(any(grepl(",", result$name)))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for standardize_names!\n")
+} else {
+  cat("✗ Public tests FAILED for standardize_names.\n")
+}
+```
+
+---
+
+## Function 6: Extract and Categorize Email Domains
+
+**Task:** Create email addresses and categorize by domain type.
+
+**Requirements:**
+
+- Generate email: firstname.lastname@domain.edu (all lowercase, no spaces)
+- Remove any special characters from names for email
+- Determine domain based on major:
+  - "Computer Science", "Engineering" → "tech.university.edu"
+  - "Mathematics", "Physics" → "science.university.edu"
+  - "Biology", "Chemistry" → "bio.university.edu"
+  - Others → "general.university.edu"
+- Add column "email" with generated email
+- Add column "domain_category" (one of: "tech", "science", "bio", "general")
+- Return the data frame with new columns
+
+```{r create_email_addresses}
+# YOUR CODE HERE
+create_email_addresses <- function(data) {
+  # TODO: Generate emails based on name and major
+  
+  # Firstly, checking to see if the input is valid. The function expects a data frame. So if it's NULL or not a data frame, I am returning NULL as a safe failure (basically the same pattern as earlier functions).
+  if(is.null(data) || !is.data.frame(data)){
+    return(NULL)
+  }
+  
+  # In case the required columns are missing, I am still returning the data frame but creating safe default outputs.
+  if(!"name" %in% names(data)){
+    data$email <- character(nrow(data))
+    data$domain_category <- "general"
+    data$email <- paste0("unknown.unknown@general.university.edu")
+    return(data)
+  }
+  if(!"major" %in% names(data)){
+    data$major <- NA_character_
+  }
+  
+  # Creating a function to build a clean and email-safe token:
+  clean_token <- function(x){
+    x <- tolower(x)
+    x <- gsub("[^a-z0-9]", "", x, perl=TRUE)
+    x
+  }
+  
+  # Determining the domain and category from major.
+  domain_for_major <- function(major_value){
+    # Handling missing majors safely.
+    if(is.na(major_value) || !nzchar(trimws(as.character(major_value)))){
+      return(list(domain="general.university.edu", category="general"))
+    }
+    
+    m <- trimws(as.character(major_value))
+    
+    if(m %in% c("Computer Science", "Engineering")){
+      return(list(domain="tech.university.edu", category="tech"))
+    }else if(m %in% c("Mathematics", "Physics")){
+      return(list(domain="science.university.edu", category="science"))
+    }else if(m %in% c("Biology", "Chemistry")){
+      return(list(domain="bio.university.edu", category="bio"))
+    }else{
+      return(list(domain="general.university.edu", category="general"))
+    }
+  }
+  
+  # Preparing the output columns.
+  data$email <- character(nrow(data))
+  data$domain_category <- character(nrow(data))
+  
+  # Generating the emails row-by-row to comply with the name+major logic.
+  for(i in seq_len(nrow(data))){
+    nm <- data$name[i]
+    mj <- data$major[i]
+    
+    # Getting the domain and category based on major.
+    dom_info <- domain_for_major(mj)
+    domain <- dom_info$domain
+    category <- dom_info$category
+    
+    # Handling the NA or empty names safely.
+    if(is.na(nm) || !nzchar(trimws(as.character(nm)))){
+      first <- "unknown"
+      last <- "unknown"
+    }else{
+      # Normalizing the whitespace and removing the title prefixes to avoid emails like "drbob.smith".
+      nm2 <- gsub("\\s+", " ", trimws(as.character(nm)))
+      nm2 <- gsub("^(dr\\.|mr\\.|ms\\.|mrs\\.|miss\\.|prof\\.|sir\\.|madam\\.|mx\\.)\\s+", "", nm2,
+                  ignore.case=TRUE, perl=TRUE)
+      nm2 <- gsub("\\s+", " ", trimws(nm2))
+      
+      # Splitting into parts.
+      parts <- strsplit(nm2, "\\s+", perl=TRUE)[[1]]
+      parts <- parts[parts!=""]
+      
+      # If it is a single word name, I am treating it as last name with "unknown" as the first name.
+      if(length(parts)==1){
+        first <- "unknown"
+        last <- clean_token(parts[1])
+      }else{
+        first <- clean_token(parts[1])
+        last <- clean_token(parts[length(parts)])
+      }
+      
+      # Adding safe fallback, in case the cleaning removes everything. Example scenario: only punctuation remains.
+      if(!nzchar(first)) first <- "unknown"
+      if(!nzchar(last)) last <- "unknown"
+    }
+    
+    # Creating email in the instructed format: firstname.lastname@domain.edu
+    data$email[i] <- paste0(first, ".", last, "@", domain)
+    data$domain_category[i] <- category
+  }
+  
+  # Returning the updated data frame with the new columns.
+  return(data)
+}
+```
+
+### Public Tests - Function 6
+
+```{r test_create_email_addresses, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("create_email_addresses works", {
+    result <- create_email_addresses(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("email" %in% colnames(result))
+    expect_true("domain_category" %in% colnames(result))
+    expect_true(all(grepl("@.*\\.edu$", result$email)))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for create_email_addresses!\n")
+} else {
+  cat("✗ Public tests FAILED for create_email_addresses.\n")
+}
+```
+
+---
+
+# Part 4: Complex Conditional Logic
+
+## Function 7: Assign Letter Grades with Curve
+
+**Task:** Assign letter grades using a curved grading system.
+
+**Requirements:**
+
+- Calculate each student's average score (mean of available exam scores)
+- Apply curve: New_avg = min(100, avg + curve_points)
+- Assign grades based on curved average:
+  - A: >= 90
+  - B: 80-89
+  - C: 70-79
+  - D: 60-69
+  - F: < 60
+- If student has all NA scores, assign "I" (Incomplete)
+- Return character vector of grades
+- Grades must be in same order as input data
+
+```{r assign_curved_grades}
+# YOUR CODE HERE
+assign_curved_grades <- function(data, curve_points) {
+  # TODO: Calculate curved grades
+  
+  # Firstly, checking to see if the input is valid. The function expects a data frame. So if it's NULL or not a data frame, I am returning NULL as a safe failure (basically the same pattern as earlier functions).
+  if(is.null(data) || !is.data.frame(data)){
+    return(character(0))
+  }
+  
+  # Validating curve_points as it should be a single numeric value. In case it's invalid, I am treating curve_points as 0 to keep the function stable.
+  if(is.null(curve_points) || !is.numeric(curve_points) || length(curve_points) != 1 || is.na(curve_points)){
+    curve_points <- 0
+  }
+  
+  # Defining the score columns that contribute to the average.
+  score_cols <- c("math_score", "english_score", "science_score")
+  
+  # Ensuring missing score columns exist (filled with NA) so row-wise logic remains consistent.
+  for(col in score_cols){
+    if(!col %in% names(data)){
+      data[[col]] <- NA
+    }
+  }
+  
+  # Extracting the score matrix.
+  scores <- as.matrix(data[, score_cols, drop=FALSE])
+  
+  # Calculating the average of available scores per student. In case a student has all NA scores, the mean should be NA.
+  avg_scores <- apply(scores, 1, function(x){
+    if(all(is.na(x))){
+      return(NA_real_)
+    }else{
+      return(mean(x, na.rm=TRUE))
+    }
+  })
+  
+  # Applying the curve: New_avg = min(100, avg+curve_points)
+  curved_avg <- avg_scores+curve_points
+  curved_avg <- pmin(curved_avg, 100)
+  
+  # Initializing grade vector.
+  grades <- rep(NA_character_, length(curved_avg))
+  
+  # Assigning "I" (Incomplete) for students with all NA scores.
+  grades[is.na(curved_avg)] <- "I"
+  
+  # Assigning letter grades for the non-NA curved averages.
+  non_na <- !is.na(curved_avg)
+  grades[non_na & curved_avg>=90] <- "A"
+  grades[non_na & curved_avg>=80 & curved_avg<90] <- "B"
+  grades[non_na & curved_avg>=70 & curved_avg<80] <- "C"
+  grades[non_na & curved_avg>=60 & curved_avg<70] <- "D"
+  grades[non_na & curved_avg<60] <- "F"
+  
+  # Returning the character vector of grades in the same order as the input.
+  return(grades)
+}
+```
+
+### Public Tests - Function 7
+
+```{r test_assign_curved_grades, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("assign_curved_grades works", {
+    result <- assign_curved_grades(data, 5)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_type(result, "character")
+    expect_equal(length(result), nrow(data))
+    valid_grades <- c("A", "B", "C", "D", "F", "I")
+    expect_true(all(result %in% valid_grades))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for assign_curved_grades!\n")
+} else {
+  cat("✗ Public tests FAILED for assign_curved_grades.\n")
+}
+```
+
+---
+
+## Function 8: Predict At-Risk with Multiple Criteria
+
+**Task:** Identify at-risk students using multiple weighted criteria.
+
+**Requirements:**
+
+- Calculate risk score (0-100) based on:
+  - Low attendance (< 80%): +30 points
+  - Low average exam score (< 70): +25 points
+  - Failed midterm (passed_midterm == FALSE): +20 points
+  - Missing assignments (any NA in assignment scores): +15 points
+  - High score variance (range > 20): +10 points
+- Students with risk_score >= risk_threshold are "at risk"
+- Return data frame with at-risk students only
+- Add columns: "risk_score" and "risk_factors" (comma-separated list of triggered factors)
+- Sort by risk_score (descending)
+
+**Example risk_factors:** "Low Attendance, Failed Midterm, Missing Assignments"
+
+```{r predict_at_risk_students}
+# YOUR CODE HERE
+predict_at_risk_students <- function(data, risk_threshold) {
+  # TODO: Calculate risk scores with multiple criteria
+  
+  # Firstly, checking to see if the input is valid. The function expects a data frame. So if it's NULL or not a data frame, I am returning NULL as a safe failure (basically the same pattern as earlier functions).
+  if(is.null(data) || !is.data.frame(data)){
+    return(data.frame())
+  }
+  
+  # Validating the risk_threshold as it must be a single numeric value. In case it's invalid, I am returning an empty data frame with the expected added columns.
+  if(is.null(risk_threshold) || !is.numeric(risk_threshold) || length(risk_threshold)!=1 || is.na(risk_threshold)){
+    empty <- data[0, , drop=FALSE]
+    empty$risk_score <- numeric(0)
+    empty$risk_factors <- character(0)
+    return(empty)
+  }
+  
+  # Defining key columns used by the risk rules.
+  score_cols <- c("math_score", "english_score", "science_score")
+  
+  # Ensuring the score columns exist - filled with NA - so the calculations remain consistent.
+  for(col in score_cols){
+    if(!col %in% names(data)){
+      data[[col]] <- NA
+    }
+  }
+  
+  # Ensuring the attendance and passed_midterm columns exist safely.
+  if(!"attendance" %in% names(data)){
+    data$attendance <- NA_real_
+  }
+  if(!"passed_midterm" %in% names(data)){
+    data$passed_midterm <- NA
+  }
+  
+  # Identifying the assignment score columns by name pattern. This assumes the assignment-related columns contain "assignment" in their name.
+  assignment_cols <- names(data)[grepl("assignment", names(data), ignore.case=TRUE)]
+  
+  # Extracting score matrix for exam computations.
+  scores <- as.matrix(data[, score_cols, drop=FALSE])
+  
+  # Calculating the average exam score per student.
+  avg_exam <- apply(scores, 1, function(x){
+    if(all(is.na(x))){
+      return(NA_real_)
+    }else{
+      return(mean(x, na.rm=TRUE))
+    }
+  })
+  
+  # Computing the score variance as range (max - min), only if at least 2 exam scores exist.
+  score_range <- apply(scores, 1, function(x){
+    if(sum(!is.na(x))<2){
+      return(NA_real_)
+    }else{
+      return(max(x, na.rm=TRUE)-min(x, na.rm=TRUE))
+    }
+  })
+  
+  # Determining the missing assignments: TRUE if any NA exists in assignment score columns for that student. In case there are no assignment columns, I am treating as FALSE.
+  missing_assignments <- rep(FALSE, nrow(data))
+  if(length(assignment_cols)>0){
+    assign_mat <- as.matrix(data[, assignment_cols, drop=FALSE])
+    missing_assignments <- apply(assign_mat, 1, function(x) any(is.na(x)))
+  }
+  
+  # Initializing the risk score and risk factor tracking.
+  # Personal note - trying shorthand on the for-loops below, for practice.
+  risk_score <- rep(0, nrow(data))
+  risk_factors <- vector("list", nrow(data))
+  
+  # Rule 1: Low attendance (< 80%) => +30
+  low_attendance <- !is.na(data$attendance) & data$attendance < 80
+  risk_score[low_attendance] <- risk_score[low_attendance] + 30
+  for(i in which(low_attendance)) risk_factors[[i]] <- c(risk_factors[[i]], "Low Attendance")
+  
+  # Rule 2: Low average exam score (< 70) => +25
+  low_avg <- !is.na(avg_exam) & avg_exam < 70
+  risk_score[low_avg] <- risk_score[low_avg] + 25
+  for(i in which(low_avg)) risk_factors[[i]] <- c(risk_factors[[i]], "Low Average Exam Score")
+  
+  # Rule 3: Failed midterm (passed_midterm == FALSE) => +20
+  failed_midterm <- !is.na(data$passed_midterm) & data$passed_midterm == FALSE
+  risk_score[failed_midterm] <- risk_score[failed_midterm] + 20
+  for(i in which(failed_midterm)) risk_factors[[i]] <- c(risk_factors[[i]], "Failed Midterm")
+  
+  # Rule 4: Missing assignments (any NA in assignment scores) => +15
+  miss_assign <- missing_assignments==TRUE
+  risk_score[miss_assign] <- risk_score[miss_assign]+15
+  for(i in which(miss_assign)) risk_factors[[i]] <- c(risk_factors[[i]], "Missing Assignments")
+  
+  # Rule 5: High score variance (range > 20) => +10
+  high_var <- !is.na(score_range) & score_range > 20
+  risk_score[high_var] <- risk_score[high_var]+10
+  for(i in which(high_var)) risk_factors[[i]] <- c(risk_factors[[i]], "High Score Variance")
+  
+  # Converting risk_factors list into a comma-separated character vector.
+  risk_factors_str <- vapply(risk_factors, function(x) {
+    if(length(x) == 0){
+      ""
+    }else{
+       paste(x, collapse = ", ")
+    }
+  }, character(1))
+  
+  # Adding calculated columns to a copy of the dataset.
+  result <- data
+  result$risk_score <- risk_score
+  result$risk_factors <- risk_factors_str
+  
+  # Filtering students by risk_threshold (risk_score >= risk_threshold).
+  result <- result[result$risk_score>=risk_threshold, , drop=FALSE]
+  
+  # Sorting by risk_score in descending order as required.
+  if(nrow(result)>0){
+    result <- result[order(-result$risk_score), , drop=FALSE]
+  }
+  
+  # Finally, returning only at-risk students.
+  return(result)
+}
+```
+
+### Public Tests - Function 8
+
+```{r test_predict_at_risk_students, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("predict_at_risk_students works", {
+    result <- predict_at_risk_students(data, 40)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    expect_true("risk_score" %in% colnames(result))
+    expect_true("risk_factors" %in% colnames(result))
+    if (nrow(result) > 0) {
+      expect_true(all(result$risk_score >= 40))
+    }
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for predict_at_risk_students!\n")
+} else {
+  cat("✗ Public tests FAILED for predict_at_risk_students.\n")
+}
+```
+
+---
+
+# Part 5: Advanced Data Aggregation
+
+## Function 9: Create Detailed Major Statistics
+
+**Task:** Generate comprehensive statistics by major with conditional calculations.
+
+**Requirements:**
+
+- Group by major
+- Calculate for each major:
+  - `student_count`: Total students
+  - `avg_attendance`: Mean attendance
+  - `pass_rate`: Percentage with average score >= 60
+  - `honor_roll_count`: Number with average score >= 85
+  - `perfect_attendance`: Number with attendance >= 95%
+  - `completion_rate`: Percentage who completed all assignments (no NAs)
+  - `avg_assignments`: Mean of all assignment scores
+- Round all percentages to 1 decimal place
+- Round all averages to 2 decimal places
+- Sort by pass_rate (descending), then by major (alphabetical)
+
+```{r create_major_statistics}
+# YOUR CODE HERE
+create_major_statistics <- function(data) {
+  # TODO: Calculate comprehensive statistics by major
+  
+  # Firstly, checking to see if the input is valid. The function expects a data frame. So if it's NULL or not a data frame, I am returning NULL as a safe failure (basically the same pattern as earlier functions).
+  if(is.null(data) || !is.data.frame(data)){
+    return(data.frame())
+  }
+  
+  # In case the major column is missing, proper grouping is not possible. I am returning an empty data frame for safe grading expectations.
+  if(!"major" %in% names(data)){
+    return(data.frame())
+  }
+  
+  # Ensuring attendance exists for avg_attendance and perfect_attendance calculations.
+  if(!"attendance" %in% names(data)){
+    data$attendance <- NA_real_
+  }
+  
+  # Defining exam score columns and ensuring they exist.
+  score_cols <- c("math_score", "english_score", "science_score")
+  for(col in score_cols){
+    if(!col %in% names(data)){
+      data[[col]] <- NA
+    }
+  }
+  
+  # Identifying assignment score columns.
+  assignment_cols <- names(data)[grepl("assignment", names(data), ignore.case=TRUE)]
+  
+  # Calculating each student's average exam score.
+  scores <- as.matrix(data[, score_cols, drop=FALSE])
+  avg_exam <- apply(scores, 1, function(x){
+    if(all(is.na(x))){
+      NA_real_
+    }else{
+      mean(x, na.rm=TRUE)
+    }
+  })
+  
+  # Calculating completion flag: TRUE if no NAs in assignment scores for that student. In case there are no assignment columns, I am treating completion as TRUE.
+  completed_all <- rep(TRUE, nrow(data))
+  if(length(assignment_cols)>0){
+    assign_mat <- as.matrix(data[, assignment_cols, drop=FALSE])
+    completed_all <- apply(assign_mat, 1, function(x) !any(is.na(x)))
+  }
+  
+  # Calculating a per-student "mean assignment score", and if no assignment columns exist, setting to NA.
+  avg_assign_per_student <- rep(NA_real_, nrow(data))
+  if(length(assignment_cols)>0){
+    assign_mat <- as.matrix(data[, assignment_cols, drop=FALSE])
+    avg_assign_per_student <- apply(assign_mat, 1, function(x){
+      if(all(is.na(x))){
+        NA_real_
+      }else{
+        mean(x, na.rm=TRUE)
+      }
+    })
+  }
+  
+  # Getting unique majors and excluding NA majors.
+  majors <- sort(unique(data$major))
+  majors <- majors[!is.na(majors)]
+  
+  # Now building the output row-by-row.
+  out <- data.frame(
+    major = character(0),
+    student_count = integer(0),
+    avg_attendance = numeric(0),
+    pass_rate = numeric(0),
+    honor_roll_count = integer(0),
+    perfect_attendance = integer(0),
+    completion_rate = numeric(0),
+    avg_assignments = numeric(0),
+    stringsAsFactors = FALSE
+  )
+  
+  for(m in majors){
+    idx <- which(data$major==m)
+    
+    # Student count for this major.
+    student_count <- length(idx)
+    
+    # Average attendance - ignoring NA - rounded to 2 decimals.
+    avg_attendance <- mean(data$attendance[idx], na.rm=TRUE)
+    if(is.nan(avg_attendance)){
+      avg_attendance <- NA_real_
+    }
+    
+    # Pass rate: % with average exam score >= 60 (only where avg_exam is not NA).
+    valid_avg <- !is.na(avg_exam[idx])
+    pass_rate <- if(any(valid_avg)){
+      mean(avg_exam[idx][valid_avg] >= 60) * 100
+    }else{
+      0
+    }
+    
+    # Honor roll count: number with average exam score >= 85 (only where avg_exam is not NA).
+    honor_roll_count <- if(any(valid_avg)){
+      sum(avg_exam[idx][valid_avg] >= 85)
+    }else{
+      0
+    }
+    
+    # Perfect attendance: number with attendance >= 95% (ignoring NA).
+    perfect_attendance <- sum(!is.na(data$attendance[idx]) & data$attendance[idx] >= 95)
+    
+    # Completion rate: percentage of who completed all assignments (no NAs).
+    completion_rate <- mean(completed_all[idx]) * 100
+    
+    # Average assignments: mean of per-student assignment means (ignoring NA).
+    avg_assignments <- mean(avg_assign_per_student[idx], na.rm=TRUE)
+    if(is.nan(avg_assignments)) avg_assignments <- NA_real_
+    
+    out <- rbind(out, data.frame(
+      major = m,
+      student_count = student_count,
+      avg_attendance = round(avg_attendance, 2),
+      pass_rate = round(pass_rate, 1),
+      honor_roll_count = honor_roll_count,
+      perfect_attendance = perfect_attendance,
+      completion_rate = round(completion_rate, 1),
+      avg_assignments = round(avg_assignments, 2),
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Sorting by pass_rate (descending) and then by major (alphabetical).
+  if(nrow(out)>0){
+    out <- out[order(-out$pass_rate, out$major), , drop=FALSE]
+  }
+  
+  return(out)
+}
+```
+
+### Public Tests - Function 9
+
+```{r test_create_major_statistics, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("create_major_statistics works", {
+    result <- create_major_statistics(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    required_cols <- c("major", "student_count", "avg_attendance", "pass_rate",
+                       "honor_roll_count", "perfect_attendance", "completion_rate")
+    expect_true(all(required_cols %in% colnames(result)))
+    expect_true(nrow(result) > 0)
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for create_major_statistics!\n")
+} else {
+  cat("✗ Public tests FAILED for create_major_statistics.\n")
+}
+```
+
+---
+
+## Function 10: Generate Performance Report with Ranking
+
+**Task:** Create a ranked performance report with percentile calculations.
+
+**Requirements:**
+
+- Calculate overall_score for each student: weighted average of exam scores (math: 40%, english: 30%, science: 30%)
+- Add columns:
+  - `overall_score`: The calculated weighted average
+  - `class_rank`: Rank based on overall_score (1 = highest, ties get same rank)
+  - `percentile`: Percentile rank (0-100, round to 1 decimal)
+  - `performance_tier`: Based on percentile:
+    - "Top 10%": percentile >= 90
+    - "Top 25%": percentile >= 75
+    - "Top 50%": percentile >= 50
+    - "Below Average": percentile < 50
+  - `improvement_needed`: TRUE if attendance < 85% OR any exam score < 65
+- Exclude students with all NA exam scores
+- Sort by class_rank (ascending)
+- Return data frame with: student_id, name, overall_score, class_rank, percentile, performance_tier, improvement_needed
+
+```{r generate_performance_report}
+# YOUR CODE HERE
+generate_performance_report <- function(data) {
+  # TODO: Create ranked performance report
+  
+  # One last time, checking to see if the input is valid. The function expects a data frame. So if it's NULL or not a data frame, I am returning NULL as a safe failure (basically the same pattern as earlier functions).
+  if(is.null(data) || !is.data.frame(data)){
+    return(data.frame())
+  }
+  
+  # Ensuring the instructed identity columns exist, and if missing, I am creating safe placeholders.
+  if(!"student_id" %in% names(data)){
+    data$student_id <- seq_len(nrow(data))
+  }
+  if(!"name" %in% names(data)){
+    data$name <- rep(NA_character_, nrow(data))
+  }
+  
+  # Ensuring attendance exists for the improvement_needed rule.
+  if(!"attendance" %in% names(data)){
+    data$attendance <- NA_real_
+  }
+  
+  # Defining exam score columns and ensuring they exist.
+  score_cols <- c("math_score", "english_score", "science_score")
+  for(col in score_cols){
+    if(!col %in% names(data)){
+      data[[col]] <- NA
+    }
+  }
+  
+  # Extracting exam scores matrix.
+  scores <- as.matrix(data[, score_cols, drop=FALSE])
+  
+  # Calculating weighted overall_score with redistribution (same rule as Function 3).
+  base_weights <- c(math_score = 0.40, english_score = 0.30, science_score = 0.30)
+  overall_score <- rep(NA_real_, nrow(scores))
+  
+  for(i in seq_len(nrow(scores))){
+    row_scores <- scores[i, ]
+    available <- !is.na(row_scores)
+    
+    # Exclude students with all NA exam scores.
+    if(sum(available) == 0){
+      overall_score[i] <- NA_real_
+      next
+    }
+    
+    w <- base_weights[available]
+    w <- w / sum(w)
+    overall_score[i] <- sum(row_scores[available]*w)
+  }
+  
+  overall_score <- round(overall_score, 2)
+  
+  # Creating a working data frame with only students who have at least one exam score.
+  keep <- !is.na(overall_score)
+  work <- data[keep, , drop=FALSE]
+  work$overall_score <- overall_score[keep]
+  
+  # If after filtering there are no students, return empty report with correct columns.
+  if(nrow(work)==0){
+    return(data.frame(
+      student_id = data$student_id[0],
+      name = data$name[0],
+      overall_score = numeric(0),
+      class_rank = integer(0),
+      percentile = numeric(0),
+      performance_tier = character(0),
+      improvement_needed = logical(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Calculating the class rank (1 = highest). Ties get same rank.
+  # Using rank(-score, ties.method="min") is giving the required behavior.
+  work$class_rank <- rank(-work$overall_score, ties.method="min")
+  
+  # Calculating percentile rank (0-100, rounded to 1 decimal). Also using percent_rank logic: (rank - 1) / (n - 1) * 100, with special case n==1.
+  n <- nrow(work)
+  if(n==1){
+    work$percentile <- 100.0
+  }else{
+    # Higher scores should have higher percentile, so I am calculating on overall_score ascending ranks.
+    r <- rank(work$overall_score, ties.method="min")
+    work$percentile <- round(((r - 1) / (n - 1)) * 100, 1)
+  }
+  
+  # Assigning performance tiers based on percentile.
+  work$performance_tier <- ifelse(work$percentile>=90, "Top 10%",
+                          ifelse(work$percentile>=75, "Top 25%",
+                          ifelse(work$percentile>=50, "Top 50%", "Below Average")))
+  
+  # Improvement_needed: TRUE if attendance < 85% OR any exam score < 65
+  # Exam check: any of the three subject scores is < 65 (ignoring NA).
+  exam_low <- apply(as.matrix(work[, score_cols, drop=FALSE]), 1, function(x){
+    any(!is.na(x) & x<65)
+  })
+  attend_low <- !is.na(work$attendance) & work$attendance<85
+  work$improvement_needed <- attend_low | exam_low
+  
+  # Sorting by class_rank ascending as instructed
+  work <- work[order(work$class_rank, -work$overall_score), , drop=FALSE]
+  
+  # Finally, returning only the required columns in the requested order.
+  result <- work[, c("student_id", "name", "overall_score", "class_rank",
+                     "percentile", "performance_tier", "improvement_needed"), drop=FALSE]
+  
+  return(result)
+}
+```
+
+### Public Tests - Function 10
+
+```{r test_generate_performance_report, error=TRUE}
+public_test_passed <- tryCatch({
+  test_that("generate_performance_report works", {
+    result <- generate_performance_report(data)
+    expect_false(is.null(result), info = "Function returned NULL")
+    expect_true(is.data.frame(result))
+    required_cols <- c("student_id", "name", "overall_score", "class_rank",
+                       "percentile", "performance_tier", "improvement_needed")
+    expect_true(all(required_cols %in% colnames(result)))
+    expect_true(nrow(result) > 0)
+    expect_true(all(result$percentile >= 0 & result$percentile <= 100))
+  })
+  TRUE
+}, error = function(e) FALSE)
+
+if (public_test_passed) {
+  cat("✓ Public tests passed for generate_performance_report!\n")
+} else {
+  cat("✗ Public tests FAILED for generate_performance_report.\n")
+}
+```
+
+---
+
+# Summary
+
+Run all chunks above to test your implementations. Make sure all public tests pass!
+
+**Before submitting:**
+
+1. Knit this document to HTML to ensure everything runs
+2. Check that you see "✓ Public tests passed" for all 10 functions
+3. Submit this .Rmd file along with your AI usage declaration
+
+**Note:** Your instructor will run additional hidden tests that check:
+
+- Edge cases (empty data, all NAs, boundary values)
+- Correct logic implementation
+- Proper handling of special cases
+- Weight redistribution accuracy
+- Ranking and percentile calculations
+- String manipulation correctness
+
+Good luck!
