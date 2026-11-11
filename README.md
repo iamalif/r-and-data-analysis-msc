@@ -58,3 +58,7 @@ R programming, functions, data structures, data cleaning, dplyr, ggplot2, explor
 The coursework is complete. Repository maintenance may continue to improve documentation and organisation.
 
 This collection includes my coursework alongside supplied assignment templates, lab solutions and teaching examples. Original datasets and teaching materials remain attributed to their respective creators. Preserve the workshop's licence and credits when reusing its material.
+
+## Further coursework
+
+[Statistical Learning MSc](https://github.com/iamalif/statistical-learning-msc) extends this foundational work with wine-quality regression, classification, ensemble methods, support vector machines, PCA and clustering.
